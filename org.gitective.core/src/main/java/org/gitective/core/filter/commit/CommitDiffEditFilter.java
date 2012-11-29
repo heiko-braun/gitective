@@ -95,11 +95,28 @@ public class CommitDiffEditFilter extends CommitDiffFilter {
 			final AbbreviatedObjectId oldId = diff.getOldId();
 			if (oldId == null)
 				continue;
-			if (!include(commit, diff, BlobUtils.diff(reader,
-					oldId.toObjectId(), diff.getNewId().toObjectId())))
+
+			Collection<Edit> edits = BlobUtils.diff(reader,
+					oldId.toObjectId(), diff.getNewId().toObjectId());
+
+			if(!acceptDiff(diff, edits))
+				continue;
+
+			if (!include(commit, diff, edits))
 				return markEnd(commit).include(false);
 		}
 		markEnd(commit);
+		return true;
+	}
+
+	/**
+	 * Hook that specifies wheter to accept the specified diff or not.
+	 * In case it is not accepted, the CommitDiffEditFilter won't call it's {@link CommitDiffEditFilter#include(RevCommit, DiffEntry, Collection)}} hook with this diff
+	 * @param diff - the diff to check
+	 * @param edits - the diff's edits
+	 * @return true if the specified diff is accepted. False otherwise.
+	 */
+	protected boolean acceptDiff(DiffEntry diff, Collection<Edit> edits) {
 		return true;
 	}
 
