@@ -102,7 +102,7 @@ public class CommitDiffEditFilter extends CommitDiffFilter {
 			if(!acceptDiff(diff, edits))
 				continue;
 
-			edits = filterEdits(edits);
+			edits = filterEdits(diff, edits);
 
 			if (!include(commit, diff, edits))
 				return markEnd(commit).include(false);
@@ -114,10 +114,11 @@ public class CommitDiffEditFilter extends CommitDiffFilter {
 	/**
 	 * Hook to filter the individual edits before handing them to {@link CommitDiffEditFilter#include(RevCommit, DiffEntry, Collection)}}.
 	 * Base implementation returns the initial edits.
+	 * @param diff
 	 * @param edits
 	 * @return
 	 */
-	protected Collection<Edit> filterEdits(Collection<Edit> edits) {
+	protected Collection<Edit> filterEdits(DiffEntry diff, Collection<Edit> edits) {
 		return edits;
 	}
 
