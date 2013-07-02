@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Core
+Bundle-SymbolicName: org.gitective.core
+Bundle-Version: 1.0.0.qualifier
+Export-Package: org.gitective.core,
+ org.gitective.core.filter.commit,
+ org.gitective.core.filter.tree,
+ org.gitective.core.stat,
+ org.gitective.tests
+Require-Bundle: org.junit;bundle-version="4.8.2",
+ org.eclipse.jgit;bundle-version="2.2.0";visibility:=reexport
