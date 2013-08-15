@@ -21,7 +21,9 @@
  */
 package org.gitective.tests;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.eclipse.jgit.errors.StopWalkException;
 import org.eclipse.jgit.lib.Constants;
@@ -54,8 +56,7 @@ public class CommitFinderTest extends GitTestCase {
 		final IOException exception = new IOException("message");
 		finder.setFilter(new CommitFilter() {
 
-			public boolean include(RevWalk walker, RevCommit cmit)
-					throws IOException {
+			public boolean include(RevWalk walker, RevCommit cmit) throws IOException {
 				throw exception;
 			}
 
@@ -85,8 +86,7 @@ public class CommitFinderTest extends GitTestCase {
 		CommitCountFilter count = new CommitCountFilter();
 		finder.setFilter(new AndCommitFilter(new CommitFilter() {
 
-			public boolean include(RevWalk walker, RevCommit cmit)
-					throws IOException {
+			public boolean include(RevWalk walker, RevCommit cmit) throws IOException {
 				throw StopWalkException.INSTANCE;
 			}
 
@@ -188,5 +188,72 @@ public class CommitFinderTest extends GitTestCase {
 		assertEquals(2, commits.getCommits().size());
 		assertTrue(commits.getCommits().contains(commit4));
 		assertTrue(commits.getCommits().contains(commit3));
+	}
+
+	/**
+	 * Find commits starting from one ID
+	 *
+	 * @throws Exception
+	 */
+	@Test
+	public void findFromCommits() throws Exception {
+		RevCommit first = add("test.txt", "content");
+		RevCommit from = add("test.txt", "content2");
+		add("test.txt", "content3");
+
+		CommitListFilter commitListFilter = new CommitListFilter();
+		new CommitFinder(testRepo).setFilter(commitListFilter).findFrom(Arrays.asList(new String[] { from.name() }));
+		assertEquals(2, commitListFilter.getCommits().size());
+		assertTrue(commitListFilter.getCommits().contains(from));
+		assertTrue(commitListFilter.getCommits().contains(first));
+	}
+
+	@Test
+	public void findFromCommitsNotInRepo() throws Exception {
+		File repo1 = initRepo();
+		File repo2 = initRepo();
+
+		testRepo = repo1;
+		RevCommit toFind = add("test.txt", "Commit on one repo");
+		testRepo = repo2;
+		RevCommit other = add("test1.txt", "Commit on the other repo");
+
+		CommitListFilter filter = new CommitListFilter();
+		new CommitFinder(testRepo).setFilter(filter).findFrom(Arrays.asList(new String[] { toFind.name() }));
+		assertEquals(0, filter.getCommits().size());
+	}
+
+	@Test
+	public void findCommitsInBranchesForTwoBranches() throws Exception {
+		add("first.txt", "one");
+		branch("test");
+		add("second.txt", "one");
+		add("second.txt", "two");
+		checkout("master");
+		add("first.txt", "two");
+
+		CommitListFilter filter = new CommitListFilter();
+		new CommitFinder(testRepo).setFilter(filter).findInBranches();
+
+		System.out.println(filter.getCommits());
+		assertEquals(5, filter.getCommits().size());
+
+	}
+
+	@Test
+	public void findCommitsOnTwoBranches() throws Exception {
+		add("first.txt", "one");
+		branch("test");
+		add("second.txt", "one");
+		RevCommit second = add("second.txt", "two");
+		checkout("master");
+		RevCommit first = add("first.txt", "two");
+
+		CommitListFilter filter = new CommitListFilter();
+		new CommitFinder(testRepo).setFilter(filter).findFrom(
+				Arrays.asList(new String[] { first.name(), second.name() }));
+
+		System.out.println(filter.getCommits());
+		assertEquals(5, filter.getCommits().size());
 	}
 }

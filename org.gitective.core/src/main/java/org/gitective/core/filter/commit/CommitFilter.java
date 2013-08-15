@@ -112,4 +112,12 @@ public abstract class CommitFilter extends RevFilter implements Cloneable {
 	public RevFilter clone() {
 		throw new UnsupportedOperationException("Clone not supported");
 	}
+
+	/**
+	 * Returns the repository associated with this filter.
+	 * @return
+	 */
+	public Repository getRepository() {
+		return repository;
+	}
 }

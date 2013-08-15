@@ -25,7 +25,9 @@ import static org.eclipse.jgit.lib.Constants.HEAD;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.jgit.errors.StopWalkException;
 import org.eclipse.jgit.lib.ObjectId;
@@ -363,5 +365,42 @@ public class CommitFinder extends RepositoryService {
 	 */
 	public CommitFinder findUntil(final ObjectId end) {
 		return findBetween(HEAD, end);
+	}
+
+	/**
+	 * Finds commits starting from the given ID's. This is needed to help
+	 * restart a walk once it has been stopped.
+	 *
+	 * @param commitIDs the start ID's of the commits
+	 * @return this CommitFinder
+	 */
+	public CommitFinder findFrom(final List<String> commitIDs) {
+		for (Repository repo : repositories) {
+			List<RevCommit> commits = getCommitsForRepo(commitIDs, repo);
+			RevWalk walk = createWalk(repo);
+			try {
+				walk.markStart(commits);
+				walk(walk);
+			} catch (IOException e) {
+				throw new GitException(e, repo);
+			} finally {
+				walk.release();
+			}
+		}
+		return this;
+	}
+
+	private List<RevCommit> getCommitsForRepo(final List<String> commitIDs, Repository repo) {
+		List<RevCommit> commits = new ArrayList<RevCommit>();
+		for (String commitID : commitIDs) {
+			RevCommit commit;
+			try {
+				commit = CommitUtils.getCommit(repo, commitID);
+			} catch (GitException e) {
+				continue;
+			}
+			commits.add(commit);
+		}
+		return commits;
 	}
 }
