@@ -386,7 +386,7 @@ public class HistogramTest extends GitTestCase {
 		assertEquals(4, files.length);
 		assertEquals("file1.txt", files[0].getPath());
 		assertEquals("file3.txt", files[1].getPath());
-		assertEquals("file2.txt", files[2].getPath());
-		assertEquals("file4.txt", files[3].getPath());
+		assertEquals("file4.txt", files[2].getPath());
+		assertEquals("file2.txt", files[3].getPath());
 	}
 }
