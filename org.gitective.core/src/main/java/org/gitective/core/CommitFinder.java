@@ -149,10 +149,11 @@ public class CommitFinder extends RepositoryService {
 	 */
 	protected CommitFinder walk(final RevWalk walk) throws IOException {
 		try {
-			while (walk.next() != null)
-				;
+			for (RevCommit revCommit : walk) {
+				// nada, simply triggers the filters
+			}
 		} catch (StopWalkException ignored) {
-			// Ignored
+			ignored.printStackTrace();
 		}
 		return this;
 	}
